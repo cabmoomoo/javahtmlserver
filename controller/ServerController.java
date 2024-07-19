@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.util.Scanner;
 import model.HTTPContentType;
 import model.HTTPStatus;
+import model.State;
 import server.Server;
 import utils.Request;
 import utils.Response;
@@ -16,13 +17,16 @@ public class ServerController {
 
     public Server startAPI(int port) {
         Server server = new Server(port);
-        server.addEndpoint("/", this.endpointIndex);
-        server.addEndpoint("/special", this.endpointSpecial);
-        server.addEndpoint("/test", this.endpointTest);
+        server.addGetEndpoint("/", this.endpointIndex);
+        server.addGetEndpoint("/special", this.endpointSpecial);
+        server.addGetEndpoint("/test", this.endpointTest);
+        server.addGetEndpoint("/state", this.endpointGetState);
+        server.addPostEndpoint("/state/addOne", this.endpointAddOne);
+        server.addPostEndpoint("/state/subOne", this.endpointSubOne);
         return server;
     }
 
-    Servlet endpointIndex = (Request req, Response res) -> {
+    Servlet endpointIndex = (Request req, Response res, State state) -> {
         File indexFile = new File("resources/index.html");
         try (Scanner reader = new Scanner(indexFile)) {
             String body = "";
@@ -42,7 +46,7 @@ public class ServerController {
         }
     };
 
-    Servlet endpointSpecial = (Request req, Response res) -> {
+    Servlet endpointSpecial = (Request req, Response res, State state) -> {
         File specialFile = new File("resources/special.html");
         try (Scanner reader = new Scanner(specialFile)) {
             String body = "";
@@ -60,7 +64,34 @@ public class ServerController {
         }
     };
 
-    Servlet endpointTest = (Request req, Response res) -> {
+    Servlet endpointGetState = (Request req, Response res, State state) -> {
+        new ResponseFactory(res)
+            .setStatus(HTTPStatus.OK)
+            .setType(HTTPContentType.PLAIN)
+            .setBody(String.valueOf(state.getStateValue()))
+            .build()
+            .send();
+    };
+
+    Servlet endpointAddOne = (Request req, Response res, State state) -> {
+        state.add(1);
+        new ResponseFactory(res)
+            .setStatus(HTTPStatus.OK)
+            .setType(HTTPContentType.PLAIN)
+            .build()
+            .send();
+    };
+
+    Servlet endpointSubOne = (Request req, Response res, State state) -> {
+        state.sub(1);
+        new ResponseFactory(res)
+            .setStatus(HTTPStatus.OK)
+            .setType(HTTPContentType.PLAIN)
+            .build()
+            .send();
+    };
+
+    Servlet endpointTest = (Request req, Response res, State state) -> {
         // This test is legacy in that it is only a test, and would be removed before production,
         // and also in that it still demonstrates the old method for sending a response.
         res.send("This is a plain-text test", HTTPStatus.OK, HTTPContentType.PLAIN);

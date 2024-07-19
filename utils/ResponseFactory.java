@@ -53,4 +53,11 @@ public class ResponseFactory {
         return res;
     }
 
+    public static Response badRequest(Response res, String body) {
+        res.status = HTTPStatus.BAD_REQUEST;
+        res.type = HTTPContentType.PLAIN;
+        res.body = body;
+        return res;
+    }
+
 }

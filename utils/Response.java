@@ -9,7 +9,7 @@ public class Response {
     private PrintWriter out;
     HTTPStatus status;
     HTTPContentType type;
-    String body;
+    String body = "";
 
     public Response(OutputStream outputStream) {
         this.out = new PrintWriter(outputStream, true);
