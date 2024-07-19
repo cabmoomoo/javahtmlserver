@@ -9,6 +9,7 @@ import model.HTTPStatus;
 import server.Server;
 import utils.Request;
 import utils.Response;
+import utils.ResponseFactory;
 import utils.Servlet;
 
 public class ServerController {
@@ -28,11 +29,16 @@ public class ServerController {
             while (reader.hasNextLine()) {
                 body += reader.nextLine();
             }
-            res.send(body, HTTPStatus.OK, HTTPContentType.HTML);
+            new ResponseFactory(res)
+                .setBody(body)
+                .setStatus(HTTPStatus.OK)
+                .setType(HTTPContentType.HTML)
+                .build()
+                .send();
         } catch (FileNotFoundException e) {
             // Mozilla notes that for an API, 404 can also mean "the endpoint is valid but the resource itself does not exist"
             // https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#client_error_responses
-            res.send("Could not find file", HTTPStatus.NOT_FOUND, HTTPContentType.HTML);
+            ResponseFactory.fileNotFoundResponse(res).send();
         }
     };
 
@@ -43,14 +49,21 @@ public class ServerController {
             while (reader.hasNextLine()) {
                 body += reader.nextLine();
             }
-            res.send(body, HTTPStatus.OK, HTTPContentType.HTML);
+            new ResponseFactory(res)
+                .setBody(body)
+                .setStatus(HTTPStatus.OK)
+                .setType(HTTPContentType.HTML)
+                .build()
+                .send();
         } catch (FileNotFoundException e) {
-            res.send("Could not find file", HTTPStatus.NOT_FOUND, HTTPContentType.HTML);
+            ResponseFactory.fileNotFoundResponse(res).send();
         }
     };
 
     Servlet endpointTest = (Request req, Response res) -> {
-        res.send("This is a plain-text test", HTTPStatus.OK, HTTPContentType.HTML);
+        // This test is legacy in that it is only a test, and would be removed before production,
+        // and also in that it still demonstrates the old method for sending a response.
+        res.send("This is a plain-text test", HTTPStatus.OK, HTTPContentType.PLAIN);
     };
     
 }
