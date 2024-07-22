@@ -9,6 +9,7 @@ public class Request {
     public HTTPRequestMethod method;
     public String path;
     public Map<String, String> headers = new HashMap<>();
+    public String body;
 
     public Request(InputStream in) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
@@ -21,6 +22,16 @@ public class Request {
             if (line.contains(":")) {
                 String[] tokens = line.split(": ");
                 this.headers.put(tokens[0], tokens[1]);
+            }
+        }
+        
+        if (this.headers.containsKey("Content-Length")) {
+            int contentLength = Integer.parseInt(this.headers.get("Content-Length"));
+            char[] bodyArray = new char[contentLength];
+            reader.read(bodyArray);
+            this.body = "";
+            for (char character : bodyArray) {
+                this.body += character;
             }
         }
     }

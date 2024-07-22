@@ -5,7 +5,7 @@ import model.HTTPContentType;
 import model.HTTPStatus;
 
 public class ResponseFactory {
-    private Response res;
+    private final Response res;
     
     /*
      * Constructors
@@ -44,8 +44,18 @@ public class ResponseFactory {
     }
 
     /*
+     * Response Templates
+     */
+    public static ResponseFactory plainOK(Response res) {
+        return new ResponseFactory(res)
+            .setStatus(HTTPStatus.OK)
+            .setType(HTTPContentType.PLAIN);
+    }
+
+    /*
      * Common Responses
      */
+
     public static Response fileNotFoundResponse(Response res) {
         res.status = HTTPStatus.NOT_FOUND;
         res.type = HTTPContentType.PLAIN;

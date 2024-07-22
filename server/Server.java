@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import model.HTTPRequestMethod;
-import model.State;
 import utils.Request;
 import utils.Response;
 import utils.ResponseFactory;
@@ -19,14 +18,12 @@ public class Server {
     private ServerSocket serverSocket;
     private final Map<HTTPRequestMethod, Map<String, Servlet>> endpointMap = new HashMap<>();
     private final ExecutorService threadPool = Executors.newFixedThreadPool(10);
-    private State state;
 
     /*
      * Init the server
      */
     public Server(int port) {
         this.port = port;
-        this.state = new State();
         Runtime.getRuntime().addShutdownHook(new Thread(() -> shutdown()));
     }
 
@@ -69,7 +66,7 @@ public class Server {
             Thread.sleep(1000);
             this.threadPool.shutdown();
             this.serverSocket.close();
-        } catch (Exception e) {
+        } catch (IOException | InterruptedException e) {
             System.out.println(e.getMessage());
         }
     }
@@ -86,8 +83,8 @@ public class Server {
                 Socket client = serverSocket.accept();
                 this.threadPool.execute(() -> handle(client));
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
         }
     }
 
@@ -104,13 +101,13 @@ public class Server {
         try {
             Map<String, Servlet> methodMap = this.endpointMap.get(req.method);
             Servlet servlet = methodMap.get(req.path);
-            servlet.service(req, res, this.state);
+            servlet.service(req, res);
         } catch (NullPointerException e) {
             String body = "No servlet exists for the following request:\nMethod: " + req.method.toString() + "; Path: " + req.path;
             System.out.println(body);
             ResponseFactory.badRequest(res, body)
                 .send();
-            return; // Return is unnecessary right now, but could save some trouble in the future if we add post-response activities to handle()
+            //return; // Return is unnecessary right now, but could save some trouble in the future if we add post-response activities to handle()
         }
     }
 
